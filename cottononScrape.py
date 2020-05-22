@@ -2,6 +2,11 @@ from selenium import webdriver
 import time
 from selenium.webdriver.support import expected_conditions as EC
 import urllib.request
+import shutil
+from datetime import date
+import os
+import csv
+
 
 
 
@@ -14,7 +19,7 @@ SCROLL_PAUSE_TIME = 10
 # Get scroll height
 last_height = driver.execute_script("return document.body.scrollHeight")
 y = 1000
-for timer in range(0,30):
+for timer in range(0,23):
     driver.execute_script("window.scrollTo(0, "+str(y)+")")
     y += 1000  
     time.sleep(1)
@@ -27,8 +32,8 @@ print("Number Of Clothes on this page : "+ driver.find_element_by_id(numberOfClo
 
 listofitems=driver.find_element_by_id(numberOfClothesID)
 elems=listofitems.find_elements_by_tag_name("li")
-print(elems)
-print(len(elems))
+#print(elems)
+#print(len(elems))
 #for img in elems:
 #    print(img.find_element_by_class_name("thumb-link").get_attribute("src"))
 
@@ -47,6 +52,15 @@ print(len(elems))
 # for i in range(len(elems)):
 #     image=elems[i].find_element_by_class("product-tile").find_element_by_class("product-image").find_element_by_class("thumb-link").get_attribute("src")
 #     print(image)
+
+currentdate=date.today()
+newpath = f"/Users/eliseching/Downloads/FashionScrape/{currentdate}"
+if not os.path.exists(newpath):
+    os.makedirs(newpath)
+
+with open(str(currentdate)+".csv", "a") as fp:
+    wr = csv.writer(fp, dialect='excel')
+
 counter=1
 for img in elems:
     
@@ -54,11 +68,29 @@ for img in elems:
     counter=counter+1
     imageidori=img.find_element_by_class_name("product-tile").get_attribute("id")
     imageid='"'+imageidori+'"'
+    imagedetails=img.find_element_by_class_name("product-tile").text
+
+    #print("clothes details: "+imagedetails)
+    clothesinfo=imagedetails.splitlines()
+    print("Clothes details:")
+    print(clothesinfo)
+    price=clothesinfo[1]
+    price=price.split()
+    clothesinfo.pop(1)
+    for prices in price:
+        clothesinfo.append(prices)
+    with open(str(currentdate)+".csv", "a") as fp:
+        wr = csv.writer(fp, dialect='excel')
+        wr.writerow(clothesinfo)
+    
     imagesrc=driver.find_element_by_xpath('//*[@id='+imageid+"]/div[2]/a/img").get_attribute("src")
     urllib.request.urlretrieve(imagesrc, str(imageidori)+".jpg")
-
-
-    print(imagesrc)
+    originalfile=f"/Users/eliseching/Downloads/FashionScrape/{str(imageidori)}.jpg"
+    movedfile=f"/Users/eliseching/Downloads/FashionScrape/{currentdate}/{str(imageidori)}.jpg"
+    # originalfile=f"/Users/eliseching/Downloads/FashionScrape/{str(imageidori)}.jpg"
+    # movedfile=f"/Users/eliseching/Downloads/FashionScrape/{currentdate}/{str(imageidori)}.jpg"
+    # print(imagesrc)
+    shutil.move(originalfile,movedfile)
 
 
 

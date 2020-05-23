@@ -1,11 +1,15 @@
 from selenium import webdriver
 import time
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 import urllib.request
 import shutil
 from datetime import date
 import os
 import csv
+
 
 
 
@@ -17,12 +21,14 @@ driver.get(url)
 SCROLL_PAUSE_TIME = 10
 
 # Get scroll height
-last_height = driver.execute_script("return document.body.scrollHeight")
+#last_height = driver.execute_script("return document.body.scrollHeight")
 y = 1000
 for timer in range(0,23):
     driver.execute_script("window.scrollTo(0, "+str(y)+")")
     y += 1000  
     time.sleep(1)
+
+
 
 #get number of clothes on the page
 numberOfClothesID= "search-result-items"
@@ -58,7 +64,7 @@ newpath = f"/Users/eliseching/Downloads/FashionScrape/{currentdate}"
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-with open(str(currentdate)+".csv", "a") as fp:
+with open(str(currentdate)+".csv", "w") as fp:
     wr = csv.writer(fp, dialect='excel')
 
 counter=1
@@ -74,6 +80,8 @@ for img in elems:
     clothesinfo=imagedetails.splitlines()
     print("Clothes details:")
     print(clothesinfo)
+    if len(clothesinfo)==4:
+        clothesinfo.append("No Reviews")
     price=clothesinfo[1]
     price=price.split()
     clothesinfo.pop(1)
